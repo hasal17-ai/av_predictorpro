@@ -103,6 +103,17 @@ interface RoundRecord {
 // MAIN COMPONENT
 // ==========================================
 export default function App() {
+  // Inject Monetag verification meta tag
+  React.useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'monetag';
+    meta.content = '93d899ae89619397202182c3fcb0beaf';
+    document.head.appendChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
+
   const [history, setHistory] = useState<number[]>([]);
   const [rounds, setRounds] = useState<RoundRecord[]>([]);
   const [currentPrediction, setCurrentPrediction] = useState<any>(null);
