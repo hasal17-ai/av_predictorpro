@@ -1,0 +1,6 @@
+{
+  "name": "1xBet Aviator Signal Predictor Pro",
+  "description": "AI-powered 1xBet Aviator signal predictor, screenshot history analyzer with Gemini OCR, time-synchronized signals every 2 minutes, and user access key authentication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
