@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Crosshair, TrendingUp, Cpu, History, 
   CheckCircle, Zap, XCircle, BarChart2,
-  Activity, Target, Lock
+  Activity, Target, Lock, Key, ArrowRight
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -15,29 +15,24 @@ function cn(...inputs: ClassValue[]) {
 // ==========================================
 // HIGH-ACCURACY ALGORITHM ENGINE
 // ==========================================
-// Optimized to provide highly probable "Safe Cashout" values
 function generateAdvancedSignal(history: number[]) {
-  // Use up to last 20 records for calculation
   const validHistory = history.slice(-20);
   
   const lastMultiplier = validHistory[validHistory.length - 1];
   const recent3 = validHistory.slice(-3);
   const recentLowCount = recent3.filter((x) => x < 1.35).length;
   
-  // 1. Exponential Weighted Moving Average (EWMA)
   const alpha = 0.35;
   let ewma = validHistory[0] || 1.8;
   for (let i = 1; i < validHistory.length; i++) {
     ewma = alpha * validHistory[i] + (1 - alpha) * ewma;
   }
 
-  // 2. Volatility (Standard Deviation)
   const logVals = validHistory.map((x) => Math.log(x));
   const meanLog = logVals.reduce((a, b) => a + b, 0) / logVals.length;
   const varianceLog = logVals.reduce((a, b) => a + Math.pow(b - meanLog, 2), 0) / (logVals.length || 1);
   const stdDev = Math.sqrt(varianceLog);
 
-  // Core Prediction Logic (Optimized for High Win Rate)
   let safeCashoutVal = 1.25;
   let targetMin = 1.5;
   let targetMax = 2.0;
@@ -46,15 +41,13 @@ function generateAdvancedSignal(history: number[]) {
   let regimeName = "Stable Execution";
 
   if (recentLowCount >= 2) {
-    // Mean Reversion (Recovery after cold streak)
     targetMin = 1.85; 
     targetMax = 3.20; 
-    safeCashoutVal = 1.35; // Still keeping it safe to ensure win
+    safeCashoutVal = 1.35; 
     riskLevel = "MEDIUM"; 
     confidenceVal = 92.4;
     regimeName = "Recovery Wave (Bullish)";
   } else if (lastMultiplier >= 8.0) {
-    // Post-Spike Exhaustion Phase (Very dangerous, predict very low)
     targetMin = 1.15; 
     targetMax = 1.45; 
     safeCashoutVal = 1.10; 
@@ -62,7 +55,6 @@ function generateAdvancedSignal(history: number[]) {
     confidenceVal = 88.5;
     regimeName = "Post-Spike Exhaustion";
   } else {
-    // Normal Trend
     targetMin = Math.max(1.35, ewma * 0.8); 
     targetMax = Math.max(1.80, ewma * 1.3); 
     safeCashoutVal = Math.max(1.15, Math.min(1.40, ewma * 0.65)); 
@@ -71,7 +63,6 @@ function generateAdvancedSignal(history: number[]) {
     regimeName = "Algorithmic Baseline";
   }
 
-  // Ensure safe cashout is always sensible
   safeCashoutVal = Number(Math.max(1.05, Math.min(1.50, safeCashoutVal)).toFixed(2));
 
   return {
@@ -100,20 +91,86 @@ interface RoundRecord {
 }
 
 // ==========================================
-// MAIN COMPONENT
+// LOGIN SCREEN COMPONENT
 // ==========================================
-export default function App() {
-  // Inject Monetag verification meta tag
-  React.useEffect(() => {
-    const meta = document.createElement('meta');
-    meta.name = 'monetag';
-    meta.content = '93d899ae89619397202182c3fcb0beaf';
-    document.head.appendChild(meta);
-    return () => {
-      document.head.removeChild(meta);
-    };
-  }, []);
+function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const [key, setKey] = useState("");
+  const DEMO_KEY = "AV-PRO-DEMO-2026";
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // 1. OPEN MONETAG AD DIRECT LINK IN NEW TAB
+    window.open("https://omg10.com/4/11373400", "_blank");
+    
+    // 2. PROCEED TO LOGIN
+    onLogin();
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0A0E17] text-white flex flex-col items-center justify-center p-4 selection:bg-rose-500/30">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-600/10 blur-[120px]" />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <div className="bg-[#131A2A] border border-[#232D42] rounded-2xl p-8 shadow-2xl">
+          <div className="flex flex-col items-center mb-8 text-center">
+            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl border border-blue-500/20 flex items-center justify-center text-blue-500 mb-4 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+              <Activity size={32} strokeWidth={1.5} />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Aviator Predictor <span className="text-blue-500">Pro</span></h1>
+            <p className="text-[#64748B] text-sm mt-2">Enter your license key to access the engine</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-xs font-medium text-[#64748B] uppercase tracking-wider mb-2">Access Key</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#64748B]">
+                  <Key size={18} />
+                </div>
+                <input 
+                  type="text" 
+                  value={key}
+                  onChange={(e) => setKey(e.target.value)}
+                  className="block w-full pl-12 pr-4 py-3.5 bg-[#0A0E17] border border-[#232D42] rounded-xl text-white placeholder-[#334155] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors uppercase font-mono"
+                  placeholder={DEMO_KEY}
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={!key}
+              className="w-full py-4 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+            >
+              Verify & Connect <ArrowRight size={18} />
+            </button>
+          </form>
+
+          <div className="mt-6 p-3 rounded-lg bg-[#0A0E17] border border-[#232D42] text-center">
+            <p className="text-xs text-[#64748B] mb-1">Demo Access Key:</p>
+            <p className="text-sm text-emerald-400 font-mono font-bold select-all cursor-pointer" onClick={() => setKey(DEMO_KEY)}>{DEMO_KEY}</p>
+            <p className="text-[10px] text-[#475569] mt-2">Click key to copy/use</p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+
+// ==========================================
+// MAIN DASHBOARD COMPONENT
+// ==========================================
+function MainDashboard() {
   const [history, setHistory] = useState<number[]>([]);
   const [rounds, setRounds] = useState<RoundRecord[]>([]);
   const [currentPrediction, setCurrentPrediction] = useState<any>(null);
@@ -122,7 +179,6 @@ export default function App() {
   const REQUIRED_INITIAL_VALUES = 10;
   const isCalibrating = history.length < REQUIRED_INITIAL_VALUES;
 
-  // Handle Manual Input Submit
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const actual = parseFloat(manualInput);
@@ -130,7 +186,6 @@ export default function App() {
 
     const newHistory = [...history, actual];
     
-    // Limit memory to last 20 for performance
     if (newHistory.length > 20) {
       newHistory.shift();
     }
@@ -139,19 +194,15 @@ export default function App() {
     setManualInput("");
 
     if (newHistory.length < REQUIRED_INITIAL_VALUES) {
-      // Still calibrating, do nothing else
       return;
     }
 
     if (newHistory.length === REQUIRED_INITIAL_VALUES) {
-      // Calibration complete! Generate first prediction
       setCurrentPrediction(generateAdvancedSignal(newHistory));
       return;
     }
 
-    // Post-Calibration Loop
     if (currentPrediction) {
-      // 1. Evaluate previous prediction against actual crash
       const won = actual >= currentPrediction.safeCashout;
       const newRound: RoundRecord = {
         id: Date.now(),
@@ -165,13 +216,11 @@ export default function App() {
       };
       setRounds(prev => [newRound, ...prev]);
 
-      // 2. Generate Next Prediction
       const nextPred = generateAdvancedSignal(newHistory);
       setCurrentPrediction(nextPred);
     }
   };
 
-  // Stats calculation
   const stats = useMemo(() => {
     const total = rounds.length;
     const wins = rounds.filter(r => r.won).length;
@@ -181,16 +230,14 @@ export default function App() {
   }, [rounds]);
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] text-white flex flex-col font-sans selection:bg-rose-500/30">
-      
-      {/* Header */}
+    <div className="min-h-screen bg-[#0A0E17] text-white flex flex-col font-sans selection:bg-blue-500/30">
       <header className="border-b border-[#232D42] bg-[#131A2A]/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-rose-500/10 rounded-lg border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.2)]">
+            <div className="w-8 h-8 bg-blue-500/10 rounded-lg border border-blue-500/20 flex items-center justify-center text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
               <Activity size={18} />
             </div>
-            <span className="font-bold tracking-tight">Aviator <span className="text-rose-500">Predictor Pro</span></span>
+            <span className="font-bold tracking-tight">Aviator <span className="text-blue-500">Predictor Pro</span></span>
           </div>
           
           <div className="flex items-center gap-2">
@@ -207,14 +254,10 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl mx-auto w-full p-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Column: Input & Prediction */}
+        {/* Left Column */}
         <div className="lg:col-span-8 space-y-6">
-          
           <AnimatePresence mode="wait">
             {isCalibrating ? (
-              // ==========================================
-              // CALIBRATION PHASE
-              // ==========================================
               <motion.div
                 key="calibration"
                 initial={{ opacity: 0, y: 20 }}
@@ -227,7 +270,7 @@ export default function App() {
                 </div>
 
                 <div className="text-center max-w-lg mx-auto">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 text-blue-500 mb-6 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
                     <Lock size={32} />
                   </div>
                   <h2 className="text-2xl font-bold text-white mb-3">System Calibration Required</h2>
@@ -274,21 +317,16 @@ export default function App() {
                   </form>
                 </div>
               </motion.div>
-
             ) : (
-              // ==========================================
-              // PREDICTION PHASE
-              // ==========================================
               <motion.div
                 key="prediction"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6"
               >
-                {/* Prediction Card */}
                 {currentPrediction && (
                   <div className="bg-gradient-to-br from-[#131A2A] to-[#0F1420] border border-[#232D42] rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-rose-500 to-purple-500" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500" />
                     
                     <div className="flex justify-between items-start mb-6">
                       <h3 className="text-[#64748B] text-sm font-medium uppercase tracking-wider flex items-center gap-2">
@@ -308,13 +346,12 @@ export default function App() {
                       </div>
                       <div>
                         <p className="text-xs text-[#64748B] mb-2 uppercase tracking-wider">Calculated Target Range</p>
-                        <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400 font-mono mt-3">
+                        <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 font-mono mt-3">
                           {currentPrediction.targetRange}
                         </div>
                       </div>
                     </div>
 
-                    {/* Algorithmic Details */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-[#232D42] pt-6">
                       <div>
                         <p className="text-[10px] text-[#64748B] uppercase">Confidence</p>
@@ -340,10 +377,9 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Manual Input Action for Next Round */}
-                <div className="bg-[#131A2A] border border-rose-500/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(244,63,94,0.05)] relative overflow-hidden">
+                <div className="bg-[#131A2A] border border-blue-500/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(59,130,246,0.05)] relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-                    <Crosshair size={128} className="text-rose-500" />
+                    <Crosshair size={128} className="text-blue-500" />
                   </div>
 
                   <h3 className="text-lg font-semibold mb-2 relative z-10">Verify Round & Predict Next</h3>
@@ -360,7 +396,7 @@ export default function App() {
                         min="1.00"
                         value={manualInput}
                         onChange={(e) => setManualInput(e.target.value)}
-                        className="block w-full pl-10 pr-4 py-4 bg-[#0A0E17] border border-[#232D42] rounded-xl text-xl font-bold font-mono text-white focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors shadow-inner"
+                        className="block w-full pl-10 pr-4 py-4 bg-[#0A0E17] border border-[#232D42] rounded-xl text-xl font-bold font-mono text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors shadow-inner"
                         placeholder="Actual crash e.g. 1.85"
                         required
                         autoFocus
@@ -369,23 +405,19 @@ export default function App() {
                     <button
                       type="submit"
                       disabled={!manualInput}
-                      className="px-8 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-[0_0_20px_rgba(244,63,94,0.2)]"
+                      className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.2)]"
                     >
                       Process <TrendingUp size={18} />
                     </button>
                   </form>
                 </div>
-
               </motion.div>
             )}
           </AnimatePresence>
-
         </div>
 
-        {/* Right Column: Stats & History Tracker */}
+        {/* Right Column */}
         <div className="lg:col-span-4 space-y-6">
-          
-          {/* Win/Loss Tracker Dashboard */}
           <div className="bg-[#131A2A] border border-[#232D42] rounded-2xl p-6 relative overflow-hidden">
             {!isCalibrating && (
               <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
@@ -459,7 +491,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Current Memory View */}
           <div className="bg-[#131A2A] border border-[#232D42] rounded-2xl p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-[#64748B] text-sm font-medium uppercase tracking-wider flex items-center gap-2">
@@ -486,14 +517,37 @@ export default function App() {
               </div>
             )}
           </div>
-
         </div>
       </main>
     </div>
   );
 }
 
-// Simple Database Icon Component
+// ==========================================
+// ROOT APP COMPONENT (STATE MANAGER)
+// ==========================================
+export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Monetag verification meta tag (already injected in index.html, but keeping this for redundancy if needed, 
+  // though the index.html edit is cleaner. We will keep it to be 100% safe).
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'monetag';
+    meta.content = '93d899ae89619397202182c3fcb0beaf';
+    document.head.appendChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
+
+  if (!isLoggedIn) {
+    return <LoginScreen onLogin={() => setIsLoggedIn(true)} />;
+  }
+
+  return <MainDashboard />;
+}
+
 function DatabaseIcon() {
   return (
     <svg width="128" height="128" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
